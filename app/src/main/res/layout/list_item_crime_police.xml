@@ -6,16 +6,19 @@
     android:padding="8dp">
 
     <TextView
-        android:id="@+id/crime_title"
+        android:id="@+id/crime_title_police"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Crime Title" />
+        android:text="Crime Title"
+        android:textColor="@color/colorPrimaryDark" />
 
     <TextView
-        android:id="@+id/crime_date"
+        android:id="@+id/crime_date_police"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Crime Date" />
+        android:text="Crime Date"
+        android:textColor="@color/colorPrimaryDark" />
+
 
 
 </LinearLayout>
