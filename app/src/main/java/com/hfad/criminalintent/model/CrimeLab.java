@@ -2,6 +2,7 @@ package com.hfad.criminalintent.model;
 
 import android.content.Context;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +15,7 @@ public class CrimeLab {
     private static CrimeLab sCrimeLab;
     private List<Crime> mCrimes;
 
-    public static CrimeLab get(Context context) {
+    public static CrimeLab get(Context context)  {
         if (sCrimeLab == null) {
             sCrimeLab = new CrimeLab(context);
         }
