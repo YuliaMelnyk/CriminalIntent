@@ -1,7 +1,5 @@
 package com.hfad.criminalintent.model;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -17,7 +15,10 @@ public class Crime {
     private boolean mRequiresPolice;
 
     public Crime() {
-        mId = UUID.randomUUID();
+        this(UUID.randomUUID());
+    }
+    public Crime(UUID uuid){
+        mId = uuid;
         mDate = new Date();
     }
 
