@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.hfad.criminalintent.database.CrimeBaseHelper;
 import com.hfad.criminalintent.database.CrimeCursorWrapper;
+import com.hfad.criminalintent.database.CrimeDbShema;
 import com.hfad.criminalintent.database.CrimeDbShema.CrimeTable;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.UUID;
  */
 public class CrimeLab {
     private static CrimeLab sCrimeLab;
+    private List<Crime> mCrimes;
     private Context mContext;
     private SQLiteDatabase mDatabase;
 
@@ -32,9 +34,12 @@ public class CrimeLab {
     private CrimeLab(Context context) {
         mContext = context.getApplicationContext();
         mDatabase = new CrimeBaseHelper(mContext).getWritableDatabase();
+        //mCrimes = new ArrayList<>();
+
     }
 
     public void addCrime(Crime c) {
+        //mCrimes.add(c);
         ContentValues values = getContentValues(c);
         mDatabase.insert(CrimeTable.NAME, null, values);
     }
@@ -45,6 +50,8 @@ public class CrimeLab {
     }
 
     public List<Crime> getCrimes() {
+        //return mCrimes;
+        //return new ArrayList<>();
         List<Crime> crimes = new ArrayList<>();
 
         CrimeCursorWrapper cursor = queryCrimes(null, null);
@@ -63,11 +70,11 @@ public class CrimeLab {
 
     public Crime getCrime(UUID id) {
         CrimeCursorWrapper cursor = queryCrimes(
-                CrimeTable.Cols.UUID + " =?",
+                CrimeTable.Cols.UUID + " = ?",
                 new String[]{id.toString()}
         );
         try {
-            if (cursor.getCount() == 0) {
+            if (cursor.getCount() == 0){
                 return null;
             }
             cursor.moveToFirst();
@@ -80,14 +87,15 @@ public class CrimeLab {
     public void updateCrime(Crime crime) {
         String uuidString = crime.getId().toString();
         ContentValues values = getContentValues(crime);
-
-        mDatabase.update(CrimeTable.NAME, values, CrimeTable.Cols.UUID + " = ?", new String[]{uuidString});
+        mDatabase.update(CrimeTable.NAME, values,
+                CrimeTable.Cols.UUID + " = ?",
+                new String[]{uuidString});
     }
 
     private CrimeCursorWrapper queryCrimes(String whereClause, String[] whereArgs) {
         Cursor cursor = mDatabase.query(
                 CrimeTable.NAME,
-                null, //columns - with null take all columns
+                null,
                 whereClause,
                 whereArgs,
                 null,

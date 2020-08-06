@@ -10,11 +10,10 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * @author yuliiamelnyk on 04/08/2020
+ * @author yuliiamelnyk on 06/08/2020
  * @project CriminalIntent
  */
 public class CrimeCursorWrapper extends CursorWrapper {
-
     public CrimeCursorWrapper(Cursor cursor) {
         super(cursor);
     }
@@ -29,6 +28,7 @@ public class CrimeCursorWrapper extends CursorWrapper {
         crime.setTitle(title);
         crime.setDate(new Date(date));
         crime.setSolved(isSolved != 0);
+
         return crime;
     }
 }

@@ -60,6 +60,7 @@ public class CrimeFragment extends Fragment {
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
     }
 
+    //database
     @Override
     public void onPause() {
         super.onPause();

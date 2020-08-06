@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import com.hfad.criminalintent.database.CrimeDbShema.CrimeTable;
 
 /**
- * @author yuliiamelnyk on 04/08/2020
+ * @author yuliiamelnyk on 06/08/2020
  * @project CriminalIntent
  */
 public class CrimeBaseHelper extends SQLiteOpenHelper {
@@ -29,7 +29,6 @@ public class CrimeBaseHelper extends SQLiteOpenHelper {
                 CrimeTable.Cols.DATE + ", " +
                 CrimeTable.Cols.SOLVED +
                 ")"
-
         );
     }
 
