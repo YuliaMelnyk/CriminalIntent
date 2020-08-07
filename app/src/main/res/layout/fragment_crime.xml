@@ -34,11 +34,34 @@
         android:layout_height="wrap_content"
         android:text="@string/crime_solved_label" />
 
-    <Button
-        android:id="@+id/delete_crime"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/delete_crime" />
+        android:orientation="horizontal">
 
+        <Button
+            android:id="@+id/delete_crime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_crime" />
 
+        <Button
+            android:id="@+id/phone_suspect"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginLeft="15dp"
+            android:background="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/crime_suspect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/crime_suspect_text" />
+
+    <Button
+        android:id="@+id/crime_report"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/crime_report_text" />
 </LinearLayout>
