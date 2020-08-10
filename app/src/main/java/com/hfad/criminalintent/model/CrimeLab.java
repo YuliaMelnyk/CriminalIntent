@@ -7,9 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 
 import com.hfad.criminalintent.database.CrimeBaseHelper;
 import com.hfad.criminalintent.database.CrimeCursorWrapper;
-import com.hfad.criminalintent.database.CrimeDbShema;
 import com.hfad.criminalintent.database.CrimeDbShema.CrimeTable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -82,6 +82,11 @@ public class CrimeLab {
         } finally {
             cursor.close();
         }
+    }
+    public File getPhotoFile(Crime crime) {
+        File fileesDir = mContext.getFilesDir();
+        return new File(fileesDir, crime.getPhotoFilename());
+        //
     }
 
     public void updateCrime(Crime crime) {
