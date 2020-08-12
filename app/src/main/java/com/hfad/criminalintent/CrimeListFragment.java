@@ -1,7 +1,14 @@
 package com.hfad.criminalintent;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -10,14 +17,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
 import com.hfad.criminalintent.model.Crime;
 import com.hfad.criminalintent.model.CrimeLab;
@@ -25,6 +34,10 @@ import com.hfad.criminalintent.model.CrimeLab;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+
+import static android.content.ContentValues.TAG;
+import static androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_SWIPE;
 
 /**
  * @author yuliiamelnyk on 23/07/2020
@@ -37,16 +50,34 @@ public class CrimeListFragment extends Fragment {
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
     private boolean mSubtitleVisible;
+    private Callbacks mCallbacks;
+    private OnDeleteCrimeListener mDeleteCallBack;
 
     private static int TYPE_NORMAL = 1;
     private static int TYPE_REQUIRES_POLICE = 2;
     private int mLastUpdatedPosition = -1;
+
+    public interface Callbacks {
+        void onCrimeSelected(Crime crime);
+    }
+
+    public interface OnDeleteCrimeListener {
+        void onCrimeIdSelected(UUID crimeId);
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+        mDeleteCallBack = (OnDeleteCrimeListener) context;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
     }
+
 
     @Nullable
     @Override
@@ -57,6 +88,8 @@ public class CrimeListFragment extends Fragment {
         if (savedInstanceState != null) {
             mSubtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
         }
+        mCrimeRecyclerView.setHasFixedSize(true);
+        setCrimeRecyclerViewItemTouchListener();
         updateUI();
         return view;
     }
@@ -71,6 +104,18 @@ public class CrimeListFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(SAVED_SUBTITLE_VISIBLE, mSubtitleVisible);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+        mDeleteCallBack = null;
+    }
+
+    public void deleteCrime(UUID crimeId) {
+        Crime crime = CrimeLab.get(getActivity()).getCrime(crimeId);
+        CrimeLab.get(getActivity()).deleteCrime(crime);
     }
 
     @Override
@@ -92,8 +137,8 @@ public class CrimeListFragment extends Fragment {
             case R.id.new_crime:
                 Crime crime = new Crime();
                 CrimeLab.get(getActivity()).addCrime(crime);
-                Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getId());
-                startActivity(intent);
+                updateUI();
+                mCallbacks.onCrimeSelected(crime);
                 return true;
             case R.id.show_subtitle:
                 mSubtitleVisible = !mSubtitleVisible;
@@ -118,7 +163,7 @@ public class CrimeListFragment extends Fragment {
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
-    private void updateUI() {
+    public void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
         if (mAdapter == null) {
@@ -134,6 +179,72 @@ public class CrimeListFragment extends Fragment {
             }
         }
         updateSubtitle();
+    }
+
+    public void setCrimeRecyclerViewItemTouchListener() {
+        ItemTouchHelper.SimpleCallback itemTouchCallback =
+                new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+                    @Override
+                    public boolean onMove(RecyclerView recyclerView,
+                                          RecyclerView.ViewHolder viewHolder,
+                                          RecyclerView.ViewHolder target) {
+                        return false;
+                    }
+
+                    @Override
+                    public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                        int position = viewHolder.getAdapterPosition();
+                        Crime crime = mAdapter.mCrimes.get(position);
+                        mDeleteCallBack.onCrimeIdSelected(crime.getId());
+                    }
+
+                    @Override
+                    public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                        // get item
+                        View itemview = viewHolder.itemView;
+                        // get an icon from drawable folder
+                        Drawable deleteIcon = ContextCompat.getDrawable(getContext(), R.drawable.ic_menu_delete);
+                        // get height and width sizes from layout
+                        float IcontHeight = deleteIcon.getIntrinsicHeight();
+                        float IconWidth = deleteIcon.getIntrinsicWidth();
+                        // get item's bottom and Top size
+                        float itemHeight = itemview.getBottom() - itemview.getTop();
+
+                        if (actionState == ACTION_STATE_SWIPE) {   // user is swipe
+                            Log.d(TAG, "////////////////////////////////////////////////");
+                            Log.d(TAG, "ACTION STATE SWAP is true: ");
+
+                            Resources r = getResources();   // as you read
+                            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);    // create paint object
+                            // get layout all values from inflate crime_fragment_list.xml
+                            RectF layout = new RectF(itemview.getLeft(), itemview.getTop(), itemview.getRight(), itemview.getBottom());
+                            // set color
+                            paint.setColor(r.getColor(R.color.colorAccent));
+                            // drawing canvas
+                            c.drawRect(layout, paint);
+
+                            // to calculate deleteIcon object that necessary values
+                            int deleteIconTop = (int) (itemview.getTop() + (itemHeight - IcontHeight) / 2);
+                            int deleteIconBottom = (int) (deleteIconTop + IcontHeight);
+                            int deleteIconMargin = (int) ((itemHeight - IcontHeight) / 2);
+                            int deleteIconLeft = (int) (itemview.getRight() - deleteIconMargin - IconWidth);
+                            int deleteIconRight = (int) itemview.getRight() - deleteIconMargin;
+                            // then set boundry that get values above
+                            deleteIcon.setBounds(deleteIconLeft, deleteIconTop, deleteIconRight, deleteIconBottom);
+                            // to add canvas
+                            deleteIcon.draw(c);
+
+                            getDefaultUIUtil().onDraw(c, recyclerView, viewHolder.itemView, dX, dY, actionState, isCurrentlyActive);
+
+                        } else {
+                            Log.d(TAG, "////////////////////////////////////////////////");
+                            Log.d(TAG, "ACTION STATE SWAP is false: ");
+                        }
+                    }
+                };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(mCrimeRecyclerView);
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -164,9 +275,9 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getId());
+            mCallbacks.onCrimeSelected(mCrime);
             mLastUpdatedPosition = this.getAdapterPosition();
-            startActivity(intent);
+
         }
     }
 
